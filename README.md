@@ -1,6 +1,6 @@
 # 舞台灯光编排模拟器
 
-纯前端舞台灯光编排工具，支持灯具通道、场景 Cue、时间轴预览和演出方案导出，所有数据存在 IndexedDB。
+纯前端舞台灯光编排工具，支持灯具通道、场景 Cue、时间轴预览和演出方案导出，所有数据存在 IndexedDB。场景编辑页（`/cues`）已补成**色温校正台**：每盏灯记录额定色温与最近两次实测值，两次相差超过 120K 视为预热中、不生成稳定结果；Cue 设定目标色温与允许偏差后，关联灯具全部稳定且落在范围内才可发布，缺实测值或超差时点名灯具并挡住发布；调额定值只重算引用它的未发布 Cue，已发布记录保持快照不动。
 
 ## 快速启动
 
@@ -53,6 +53,16 @@ frontend/src/api, stores, types, constants, constructors, components/common, hoo
 - FixtureType: constants/FixtureType、types/FixtureType、constructors、logTemplates、errorMessages、筛选器、展示组件/控制器均有引用。
 - CueStatus: constants/CueStatus、types/CueStatus、constructors、logTemplates、errorMessages、筛选器、展示组件/控制器均有引用。
 - ChannelMode: constants/ChannelMode、types/ChannelMode、constructors、logTemplates、errorMessages、筛选器、展示组件/控制器均有引用。
+- WarmupStatus: constants/WarmupStatus、types/WarmupStatus、constants/statusText、utils/colorTemperature、components/common/WarmupBadge、pages/CuesPage 均有引用。
+- 色温规则常量（120K 预热阈值、色温取值范围、默认目标/偏差）: constants/ColorTempRule，被 utils/colorTemperature、stores、constructors、pages/CuesPage 引用。
+
+## 色温校正台业务规则
+
+- 灯具（Fixture）新增 `rated_color_temp`（额定色温）与 `measured_temps`（最近两次实测值，最新在前，最多保留两条）。
+- 预热判定：实测不足两次为“缺实测值”；两次相差超过 120K 为“预热中”，不生成稳定结果；否则取两次平均作为稳定结果。
+- Cue 新增 `target_color_temp`、`tolerance_k`、`fixture_ids`、`calibration_results`（每盏关联灯具的额定值快照与校正量 = 目标 − 额定）。
+- 发布拦截：任一关联灯具缺实测值、预热中或稳定结果超差，发布被挡住并在页面上点名灯具；全部通过才置为 READY 并冻结校正快照。
+- 额定值联动：调整灯具额定色温只重算引用它的未发布 Cue 的校正快照，已发布 Cue 的记录不动。
 
 ## 为什么会牵一发动全身
 

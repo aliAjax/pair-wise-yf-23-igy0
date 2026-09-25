@@ -1,3 +1,4 @@
+import { DEFAULT_TARGET_COLOR_TEMP_K, DEFAULT_TOLERANCE_K } from "../constants/ColorTempRule";
 import type { CueScene } from "../types/CueScene";
 
 export const createDefaultCueScene = (overrides: Partial<CueScene> = {}): CueScene => ({
@@ -8,6 +9,10 @@ export const createDefaultCueScene = (overrides: Partial<CueScene> = {}): CueSce
   hold_ms: "hold ms 1" as never,
   priority: "priority 1" as never,
   scene_status: "READY" as never,
+  target_color_temp: DEFAULT_TARGET_COLOR_TEMP_K,
+  tolerance_k: DEFAULT_TOLERANCE_K,
+  fixture_ids: [],
+  calibration_results: [],
   ...overrides
 });
 

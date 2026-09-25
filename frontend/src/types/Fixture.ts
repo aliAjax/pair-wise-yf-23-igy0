@@ -7,4 +7,6 @@ export interface Fixture {
   dmx_address: string;
   channel_count: number;
   color_mode: string;
+  rated_color_temp: number;
+  measured_temps: number[];
 }
