@@ -1,6 +1,15 @@
 # 舞台灯光编排模拟器
 
-纯前端舞台灯光编排工具，支持灯具通道、场景 Cue、时间轴预览和演出方案导出，所有数据存在 IndexedDB。
+纯前端舞台灯光编排工具，支持灯具通道、场景 Cue、时间轴预览和演出方案导出，所有数据存在 IndexedDB。编排页（`/cues`）已扩展为**色温校正台**：解决新旧灯混排后同场戏冷暖不一的问题。
+
+## 色温校正台规则
+
+- 每盏灯记录**额定色温**和**最近两次实测值**（只保留两条，新读数顶掉旧读数）。
+- 两次实测相差**超过 120K** 视为仍在**预热中**，不生成稳定结果；恰好 120K 视为已稳定，结果取两次均值。
+- Cue 可设置**目标色温**（留空时取关联灯具额定均值）和**允许偏差**；关联灯具全部稳定且落在偏差内才可**发布**。
+- 缺实测值、预热中或超差时，页面逐一点名灯具并挡住发布。
+- 调整额定色温只重算引用它的**未发布** Cue；已发布（READY / ARCHIVED）记录的校验快照冻结不动。
+- 页面支持录入读数、查看预热状态（预热中 / 已稳定 / 缺实测值）和发布 Cue，数据持久化在 localStorage。
 
 ## 快速启动
 
@@ -51,8 +60,11 @@ frontend/src/api, stores, types, constants, constructors, components/common, hoo
 ## 枚举/常量出现位置清单
 
 - FixtureType: constants/FixtureType、types/FixtureType、constructors、logTemplates、errorMessages、筛选器、展示组件/控制器均有引用。
-- CueStatus: constants/CueStatus、types/CueStatus、constructors、logTemplates、errorMessages、筛选器、展示组件/控制器均有引用。
+- CueStatus: constants/CueStatus、types/CueStatus、constructors、logTemplates、errorMessages、筛选器、展示组件/控制器均有引用；`PUBLISHED_CUE_STATUSES`（READY / ARCHIVED）决定哪些 Cue 不参与色温重算。
 - ChannelMode: constants/ChannelMode、types/ChannelMode、constructors、logTemplates、errorMessages、筛选器、展示组件/控制器均有引用。
+- WarmupStatus（INSUFFICIENT_DATA / WARMING / STABLE）: constants/WarmupStatus、types/WarmupStatus、constants/statusText、utils/cctCalibration、hooks/useCctCalibration、pages/CuesPage、styles.css 徽章样式均有引用。
+- CctCheckStatus（UNCHECKED / PASSED / BLOCKED）: constants/CctCheckStatus、types/CctCheckStatus、constants/statusText、utils/cctCalibration、api/CueScene、stores/CueSceneStore、pages/CuesPage 均有引用。
+- 色温阈值集中在 `constants/cctConfig.ts`（120K 预热阈值、默认允许偏差、读数合法范围、保留读数条数），被 api、utils、页面共同引用。
 
 ## 为什么会牵一发动全身
 

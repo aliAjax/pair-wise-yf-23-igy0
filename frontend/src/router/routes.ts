@@ -4,7 +4,7 @@ export const routes = [
     "route": "/fixtures"
   },
   {
-    "name": "场景编辑",
+    "name": "色温校正台",
     "route": "/cues"
   },
   {
